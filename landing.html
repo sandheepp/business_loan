@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CASA LOS — AI-Powered MSME Loan Origination</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080B18;
+      --bg-card:  #111527;
+      --bg-card2: #161B30;
+      --border:   rgba(255,255,255,0.07);
+      --purple:   #5B4CF5;
+      --purple-l: #8B7FF8;
+      --green:    #00D48A;
+      --blue:     #3B9EF5;
+      --amber:    #F5A623;
+      --red:      #FF3B57;
+      --text:     #FFFFFF;
+      --muted:    #8A8FA8;
+      --radius:   14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 4rem;
+      background: rgba(8,11,24,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #fff 30%, #A09BFF 70%, var(--green) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-logo span { font-size: 0.65rem; font-weight: 500; color: var(--muted);
+      display: block; letter-spacing: 0.12em; text-transform: uppercase;
+      -webkit-text-fill-color: var(--muted); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem;
+      font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .btn-nav {
+      background: linear-gradient(135deg, var(--purple), var(--purple-l));
+      color: #fff; border: none; padding: 0.5rem 1.3rem; border-radius: 100px;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 15px rgba(91,76,245,0.4); transition: opacity 0.2s;
+    }
+    .btn-nav:hover { opacity: 0.85; }
+
+    /* ── Sections ── */
+    section { padding: 5rem 4rem; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--purple-l); margin-bottom: 0.7rem;
+    }
+    h2.section-title {
+      font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 1rem;
+    }
+    .section-sub { font-size: 1rem; color: var(--muted); max-width: 560px; line-height: 1.7; }
+
+    /* ── Hero ── */
+    .hero-wrap {
+      min-height: 100vh; display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      padding: 7rem 4rem 4rem;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px);
+    }
+    .orb-1 { width: 500px; height: 500px; top: -100px; right: -100px;
+              background: radial-gradient(circle, rgba(91,76,245,0.35), transparent 70%); }
+    .orb-2 { width: 400px; height: 400px; bottom: -80px; left: 5%;
+              background: radial-gradient(circle, rgba(0,212,138,0.2), transparent 70%); }
+    .orb-3 { width: 300px; height: 300px; top: 30%; left: 40%;
+              background: radial-gradient(circle, rgba(59,158,245,0.12), transparent 70%); }
+
+    .hero-content { position: relative; z-index: 1; max-width: 680px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(91,76,245,0.12); border: 1px solid rgba(91,76,245,0.3);
+      border-radius: 100px; padding: 0.3rem 1rem; font-size: 0.75rem;
+      font-weight: 600; color: var(--purple-l); margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .hero-title {
+      font-size: clamp(3rem, 6vw, 4.5rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+      background: linear-gradient(135deg, #FFFFFF 30%, #A09BFF 65%, var(--green) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1.2rem;
+    }
+    .hero-sub {
+      font-size: 1.1rem; color: var(--muted); line-height: 1.75;
+      max-width: 560px; margin-bottom: 2rem;
+    }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-l));
+      color: #fff; border: none; padding: 0.85rem 2rem; border-radius: 100px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; text-decoration: none;
+      box-shadow: 0 8px 25px rgba(91,76,245,0.45); transition: transform 0.2s, opacity 0.2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-ghost {
+      background: transparent; color: #fff;
+      border: 1px solid var(--border); padding: 0.85rem 2rem; border-radius: 100px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04); }
+    .hero-badges { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .badge {
+      padding: 0.28rem 0.85rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600;
+    }
+    .badge-green  { background: rgba(0,212,138,0.12); color: var(--green);  border: 1px solid rgba(0,212,138,0.3); }
+    .badge-purple { background: rgba(91,76,245,0.12); color: var(--purple-l);border: 1px solid rgba(91,76,245,0.3); }
+    .badge-blue   { background: rgba(59,158,245,0.12); color: var(--blue);  border: 1px solid rgba(59,158,245,0.3); }
+    .badge-amber  { background: rgba(245,166,35,0.12); color: var(--amber); border: 1px solid rgba(245,166,35,0.3); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; margin: 0 4rem;
+    }
+    .stat-item {
+      background: var(--bg-card);
+      padding: 1.8rem 2rem; text-align: center;
+    }
+    .stat-value {
+      font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #FFFFFF, #A09BFF);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem;
+      text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 4rem; }
+
+    /* ── Features grid ── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.6rem; transition: border-color 0.25s, transform 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent-grad, linear-gradient(90deg, var(--purple), var(--purple-l)));
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .feature-card:hover { border-color: rgba(91,76,245,0.35); transform: translateY(-3px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 1rem;
+    }
+    .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── Pipeline section ── */
+    .pipeline-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    }
+    .pipe-stage {
+      padding: 1.1rem 0.8rem; text-align: center; position: relative;
+      border-right: 1px solid var(--border);
+    }
+    .pipe-stage:last-child { border-right: none; }
+    .pipe-stage:nth-child(5n) { border-right: none; }
+    .pipe-num {
+      font-size: 0.6rem; font-weight: 800; color: var(--muted);
+      letter-spacing: 0.05em; margin-bottom: 0.3rem;
+    }
+    .pipe-name { font-size: 0.78rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .pipe-stage.active .pipe-num { color: var(--purple-l); }
+    .pipe-stage.active .pipe-name { color: var(--purple-l); }
+    .pipe-stage.active { background: rgba(91,76,245,0.07); }
+
+    /* ── Agents grid ── */
+    .agents-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    }
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.4rem; display: flex; gap: 1rem; align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+    .agent-card:hover { border-color: rgba(255,255,255,0.14); }
+    .agent-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .agent-name { font-size: 0.95rem; font-weight: 700; }
+    .agent-role { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .agent-model { font-size: 0.68rem; font-family: monospace; font-weight: 600; margin-bottom: 0.4rem; }
+    .agent-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Compliance section ── */
+    .compliance-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    }
+    .compliance-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem; text-align: center;
+    }
+    .compliance-icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+    .compliance-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .compliance-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center; padding: 6rem 4rem;
+      background: linear-gradient(135deg, rgba(91,76,245,0.12) 0%, transparent 50%, rgba(0,212,138,0.07) 100%);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .cta-section h2 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em;
+      margin-bottom: 1rem; }
+    .cta-section p { font-size: 1rem; color: var(--muted); margin-bottom: 2rem; max-width: 500px;
+      margin-left: auto; margin-right: auto; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 2.5rem 4rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: #fff; }
+
+    /* ── Pipeline connector ── */
+    .pipeline-wrapper {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      margin-bottom: 1rem;
+    }
+    .pipe-row {
+      display: contents;
+    }
+    .pipe-cell {
+      padding: 1rem 0.7rem; text-align: center;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .pipe-cell:nth-child(5n) { border-right: none; }
+    .pipe-cell.done { background: rgba(0,212,138,0.05); }
+    .pipe-cell.active { background: rgba(91,76,245,0.1); }
+    .pipe-cell .p-num {
+      font-size: 0.58rem; font-weight: 800; letter-spacing: 0.06em;
+      margin-bottom: 0.2rem;
+    }
+    .pipe-cell .p-name { font-size: 0.75rem; font-weight: 700; line-height: 1.25; }
+    .pipe-cell .p-desc { font-size: 0.66rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.3; }
+    .pipe-cell.done .p-num { color: var(--green); }
+    .pipe-cell.done .p-name { color: var(--green); }
+    .pipe-cell.active .p-num { color: var(--purple-l); }
+    .pipe-cell.active .p-name { color: var(--purple-l); }
+    .pipe-cell.pending .p-num { color: #4A4E6A; }
+    .pipe-cell.pending .p-name { color: #6B6F8A; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ─────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">
+    CASA LOS
+    <span>MSME Loan Origination System</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#agents">AI Agents</a>
+    <a href="#compliance">Compliance</a>
+    <a href="/app" class="btn-nav">Open App →</a>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<div class="hero-wrap">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      India's AI-First MSME Credit Platform
+    </div>
+    <div class="hero-title">The future of<br>MSME lending<br>is automated.</div>
+    <p class="hero-sub">
+      CASA LOS is a fully AI-powered Loan Origination System built for India's MSME
+      secured lending market — covering all 15 stages from lead to disbursement,
+      with human-in-the-loop credit judgement and RBI compliance built in.
+    </p>
+    <div class="hero-cta">
+      <a href="/app" class="btn-primary">Launch Application →</a>
+      <a href="#pipeline" class="btn-ghost">See the Pipeline</a>
+    </div>
+    <div class="hero-badges">
+      <span class="badge badge-green">15-Stage Pipeline</span>
+      <span class="badge badge-purple">PAN · Aadhaar · CIBIL</span>
+      <span class="badge badge-blue">CAM Auto-Generation</span>
+      <span class="badge badge-amber">RBI MSME Guidelines</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Stats Bar ─────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-value">15</div>
+    <div class="stat-label">LOS Stages</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">6</div>
+    <div class="stat-label">AI Agents</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">₹10 Cr</div>
+    <div class="stat-label">Max Loan Size</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">&lt;24h</div>
+    <div class="stat-label">Decision Time</div>
+  </div>
+</div>
+
+<div class="divider" style="margin-top:4rem;"></div>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features">
+  <div class="section-label">Platform Features</div>
+  <h2 class="section-title">Everything credit teams need,<br>automated end-to-end.</h2>
+  <p class="section-sub" style="margin-bottom:3rem;">
+    Built specifically for India MSME secured lending — from KYC to CAM to disbursement,
+    every stage is automated and auditable.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(91,76,245,0.15);border:1px solid rgba(91,76,245,0.3);">🤖</div>
+      <div class="feature-title">AI-Powered Underwriting</div>
+      <div class="feature-desc">Claude Sonnet generates DSCR analysis, risk scoring, and full Credit Appraisal Memorandums — in seconds, not days.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(0,212,138,0.15);border:1px solid rgba(0,212,138,0.3);">🛡️</div>
+      <div class="feature-title">India KYC Stack</div>
+      <div class="feature-desc">PAN validation, Aadhaar verification, CKYC registry lookup, CIBIL/Experian score fetch, GSTN verification — all automated.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(59,158,245,0.15);border:1px solid rgba(59,158,245,0.3);">📄</div>
+      <div class="feature-title">Document Intelligence</div>
+      <div class="feature-desc">AI Vision extracts financials from ITRs, bank statements, and balance sheets — no manual data entry required.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.3);">📊</div>
+      <div class="feature-title">Credit Scorecard</div>
+      <div class="feature-desc">Real-time DSCR ≥ 1.25, LTV ≤ 60%, Debt/Equity, revenue growth, and operating margin checks against RBI MSME policy.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(255,59,87,0.12);border:1px solid rgba(255,59,87,0.3);">⚙️</div>
+      <div class="feature-title">Smart Approval Routing</div>
+      <div class="feature-desc">Auto-routes to BCM (&lt;₹50L), Regional Credit Head (₹50L–₹2Cr), or Credit Committee (&gt;₹2Cr) based on loan amount.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(160,155,255,0.12);border:1px solid rgba(160,155,255,0.3);">📜</div>
+      <div class="feature-title">Immutable Audit Trail</div>
+      <div class="feature-desc">Every agent action, decision, and data point is timestamped and logged — full regulatory traceability from day one.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(0,212,138,0.12);border:1px solid rgba(0,212,138,0.3);">💬</div>
+      <div class="feature-title">Sarah — Borrower AI</div>
+      <div class="feature-desc">Conversational AI agent guides applicants through the process, answers queries, and reduces drop-off at every stage.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(91,76,245,0.12);border:1px solid rgba(91,76,245,0.3);">💰</div>
+      <div class="feature-title">Risk-Based Pricing</div>
+      <div class="feature-desc">Automated interest rate pricing based on risk tier, CIBIL, collateral quality, and sector exposure — with full term sheet generation.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(59,158,245,0.12);border:1px solid rgba(59,158,245,0.3);">📈</div>
+      <div class="feature-title">Post-Disbursement Monitor</div>
+      <div class="feature-desc">Tracks EMI behavior, GST filing compliance, and revenue signals post-disbursement — early warning on NPA risk.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Pipeline ──────────────────────────────────────────────── -->
+<section id="pipeline" style="max-width:1200px;">
+  <div class="section-label">15-Stage LOS Pipeline</div>
+  <h2 class="section-title">From first inquiry<br>to full disbursement.</h2>
+  <p class="section-sub" style="margin-bottom:2.5rem;">
+    Every stage is tracked, automated, and audited. Credit teams see exactly where each
+    application is at any moment.
+  </p>
+
+  <div class="pipeline-wrapper">
+    <div class="pipe-cell done">
+      <div class="p-num">01 ✓</div>
+      <div class="p-name">Lead Creation</div>
+      <div class="p-desc">RM assignment, duplicate check</div>
+    </div>
+    <div class="pipe-cell done">
+      <div class="p-num">02 ✓</div>
+      <div class="p-name">Borrower Application</div>
+      <div class="p-desc">KYC, business & collateral info</div>
+    </div>
+    <div class="pipe-cell active">
+      <div class="p-num">03 ●</div>
+      <div class="p-name">KYC Verification</div>
+      <div class="p-desc">PAN · Aadhaar · CKYC · Watchlist</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">04</div>
+      <div class="p-name">Document Collection</div>
+      <div class="p-desc">ITR, bank statements, title deed</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">05</div>
+      <div class="p-name">Data Extraction</div>
+      <div class="p-desc">OCR · Bank parsing · ITR parsing</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">06</div>
+      <div class="p-name">External Enrichment</div>
+      <div class="p-desc">CIBIL · GSTN · MCA · Aggregation</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">07</div>
+      <div class="p-name">Financial Analysis</div>
+      <div class="p-desc">DSCR · D/E · Revenue · Margins</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">08</div>
+      <div class="p-name">Collateral Assessment</div>
+      <div class="p-desc">LTV · Legal title · Encumbrance</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">09</div>
+      <div class="p-name">Credit Underwriting</div>
+      <div class="p-desc">Risk score · Policy · Anomaly</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">10</div>
+      <div class="p-name">CAM Draft</div>
+      <div class="p-desc">AI-generated · Analyst review</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">11</div>
+      <div class="p-name">Approval Workflow</div>
+      <div class="p-desc">BCM / RCH / Credit Committee</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">12</div>
+      <div class="p-name">Sanction Letter</div>
+      <div class="p-desc">Auto-generated · Digital sign</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">13</div>
+      <div class="p-name">Legal Docs</div>
+      <div class="p-desc">Agreement · Mortgage · Guarantee</div>
+    </div>
+    <div class="pipe-cell pending">
+      <div class="p-num">14</div>
+      <div class="p-name">Disbursement</div>
+      <div class="p-desc">CBS integration · Funds transfer</div>
+    </div>
+    <div class="pipe-cell pending" style="border-right:none;">
+      <div class="p-num">15</div>
+      <div class="p-name">Monitoring</div>
+      <div class="p-desc">EMI · GST · Revenue tracking</div>
+    </div>
+  </div>
+
+  <!-- Credit thresholds -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem;">
+    <div style="background:rgba(0,212,138,0.07);border:1px solid rgba(0,212,138,0.2);border-radius:12px;padding:1.2rem;text-align:center;">
+      <div style="font-size:1.6rem;font-weight:900;color:#00D48A;">≥ 1.25</div>
+      <div style="font-size:0.72rem;color:#8A8FA8;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.07em;">Min DSCR</div>
+    </div>
+    <div style="background:rgba(91,76,245,0.07);border:1px solid rgba(91,76,245,0.2);border-radius:12px;padding:1.2rem;text-align:center;">
+      <div style="font-size:1.6rem;font-weight:900;color:#A09BFF;">≤ 60%</div>
+      <div style="font-size:0.72rem;color:#8A8FA8;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.07em;">Max LTV</div>
+    </div>
+    <div style="background:rgba(59,158,245,0.07);border:1px solid rgba(59,158,245,0.2);border-radius:12px;padding:1.2rem;text-align:center;">
+      <div style="font-size:1.6rem;font-weight:900;color:#3B9EF5;">≥ 650</div>
+      <div style="font-size:0.72rem;color:#8A8FA8;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.07em;">Min CIBIL</div>
+    </div>
+    <div style="background:rgba(245,166,35,0.07);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:1.2rem;text-align:center;">
+      <div style="font-size:1.6rem;font-weight:900;color:#F5A623;">₹10 Cr</div>
+      <div style="font-size:0.72rem;color:#8A8FA8;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.07em;">Max Loan</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Agents ─────────────────────────────────────────────────── -->
+<section id="agents">
+  <div class="section-label">AI Agent Architecture</div>
+  <h2 class="section-title">Six specialized agents.<br>One unified pipeline.</h2>
+  <p class="section-sub" style="margin-bottom:2.5rem;">
+    Each agent is purpose-built for its role — deterministic where rules matter,
+    generative where judgement does.
+  </p>
+
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(91,76,245,0.15);border:1px solid rgba(91,76,245,0.3);">💬</div>
+      <div>
+        <div class="agent-name">Sarah</div>
+        <div class="agent-role">Engagement Agent</div>
+        <div class="agent-model" style="color:#7B6BF8;">claude-sonnet-4-6</div>
+        <div class="agent-desc">Guides borrowers through the application, reduces drop-off, and provides real-time status updates via conversational AI.</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(59,158,245,0.12);border:1px solid rgba(59,158,245,0.3);">🛡️</div>
+      <div>
+        <div class="agent-name">KYC Agent</div>
+        <div class="agent-role">Compliance</div>
+        <div class="agent-model" style="color:#3B9EF5;">Deterministic + AI</div>
+        <div class="agent-desc">PAN/Aadhaar/CKYC validation, CIBIL score fetch, MSME eligibility check, and watchlist screening.</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);">📄</div>
+      <div>
+        <div class="agent-name">Document AI</div>
+        <div class="agent-role">Document Intelligence</div>
+        <div class="agent-model" style="color:#F5A623;">claude-sonnet-4-6 Vision</div>
+        <div class="agent-desc">OCR extraction from ITRs, bank statements, and financial documents — with cross-document validation.</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(0,212,138,0.12);border:1px solid rgba(0,212,138,0.3);">📊</div>
+      <div>
+        <div class="agent-name">Underwriting</div>
+        <div class="agent-role">Credit Analysis</div>
+        <div class="agent-model" style="color:#00D48A;">Deterministic + claude-sonnet-4-6</div>
+        <div class="agent-desc">DSCR, LTV, Debt/Equity, risk scoring (A+ to D), and full AI-generated Credit Appraisal Memorandum.</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(255,107,138,0.1);border:1px solid rgba(255,59,87,0.25);">💰</div>
+      <div>
+        <div class="agent-name">Pricing</div>
+        <div class="agent-role">Pricing Agent</div>
+        <div class="agent-model" style="color:#FF6B8A;">Deterministic</div>
+        <div class="agent-desc">Risk-based interest rate pricing, EMI calculation, and automated term sheet generation with full rationale.</div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">⚙️</div>
+      <div>
+        <div class="agent-name">Orchestrator</div>
+        <div class="agent-role">Workflow Engine</div>
+        <div class="agent-model" style="color:#8A8FA8;">State Machine (No LLM)</div>
+        <div class="agent-desc">Routes applications through all 15 stages, manages approval hierarchy, and maintains the immutable audit trail.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Compliance ─────────────────────────────────────────────── -->
+<section id="compliance">
+  <div class="section-label">Compliance & Security</div>
+  <h2 class="section-title">Built for RBI guidelines<br>from the ground up.</h2>
+  <p class="section-sub" style="margin-bottom:2.5rem;">
+    Every credit decision, threshold, and workflow is aligned with RBI MSME lending circulars
+    and India financial regulation.
+  </p>
+
+  <div class="compliance-grid">
+    <div class="compliance-card">
+      <div class="compliance-icon">🇮🇳</div>
+      <div class="compliance-title">RBI MSME Guidelines</div>
+      <div class="compliance-desc">DSCR, LTV, and approval hierarchy aligned with RBI Circular on MSME lending.</div>
+    </div>
+    <div class="compliance-card">
+      <div class="compliance-icon">🪪</div>
+      <div class="compliance-title">India KYC / AML</div>
+      <div class="compliance-desc">PAN, Aadhaar, CKYC registry, watchlist screening — full KYC/AML workflow out of the box.</div>
+    </div>
+    <div class="compliance-card">
+      <div class="compliance-icon">📜</div>
+      <div class="compliance-title">Immutable Audit Log</div>
+      <div class="compliance-desc">Every action is timestamped and agent-attributed — fully auditable for regulatory inspection.</div>
+    </div>
+    <div class="compliance-card">
+      <div class="compliance-icon">👥</div>
+      <div class="compliance-title">Human-in-the-Loop</div>
+      <div class="compliance-desc">Credit officers retain final decision authority. AI recommends; humans approve — as required by regulation.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────────── -->
+<div class="cta-section">
+  <div class="section-label" style="text-align:center;">Get Started</div>
+  <h2>Ready to automate your<br>MSME credit pipeline?</h2>
+  <p>Launch the full 15-stage LOS platform. Submit an application, run the AI pipeline,
+     and get a credit decision — in minutes.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+    <a href="/app" class="btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">
+      Launch CASA LOS →
+    </a>
+    <a href="/app/Application" class="btn-ghost" style="font-size:1rem;padding:1rem 2.5rem;">
+      Start an Application
+    </a>
+  </div>
+</div>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+  <div>
+    <div style="font-weight:800;font-size:1rem;letter-spacing:-0.03em;margin-bottom:0.2rem;">CASA LOS</div>
+    <div style="font-size:0.75rem;">AI-Powered MSME Loan Origination System · India</div>
+  </div>
+  <div style="display:flex;gap:2rem;">
+    <a href="/app">App</a>
+    <a href="/app/Dashboard">Dashboard</a>
+    <a href="/app/Underwriting">Underwriting</a>
+    <a href="/app/Approvals">Approvals</a>
+  </div>
+  <div>Built with Claude Sonnet · FastAPI · Streamlit</div>
+</footer>
+
+</body>
+</html>

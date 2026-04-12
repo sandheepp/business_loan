@@ -1,113 +1,128 @@
-"""Underwriting Agent — Financial analysis, DSCR, credit policy scoring.
+"""Underwriting Agent — India MSME Financial Analysis, DSCR, LTV, Risk Scoring.
 
 Recommended models:
-  - Tax return extraction: claude-sonnet-4-20250514 (vision)
   - Financial calculations: DETERMINISTIC (never LLM)
-  - Underwriting memo: claude-sonnet-4-20250514
-  - Deal matching: text-embedding-3-small
+  - CAM narrative / memo: claude-sonnet-4-6
 """
+import random
 from backend.agents.base_agent import BaseAgent
 from backend.core.llm_gateway import llm_complete
 from backend.database import SessionLocal, LoanApplication
+from backend.config import settings
 
 
 # ── Deterministic Financial Engine ───────────────────────────
 
 def calculate_dscr(
-    net_income: float,
-    officer_salary: float,
-    depreciation: float,
-    interest_expense: float,
-    non_recurring: float,
-    monthly_personal_debt: float,
-    existing_annual_debt_service: float,
-    new_annual_debt_service: float,
-) -> dict:
-    """Calculate DSCR using deterministic formula. NO LLM INVOLVED.
+    avg_monthly_cashflow: float,
+    existing_emi: float,
+    proposed_emi: float,
+) -> float:
+    """DSCR = Avg Monthly Cash Flow / (Existing EMI + Proposed EMI).
 
-    Formula:
-        adjusted = net_income + officer_salary + depreciation + interest + non_recurring
-        dscr = (adjusted - annual_personal_debt) / (existing_debt + new_debt)
+    RBI MSME guideline: DSCR >= 1.25 for secured loans.
     """
-    add_backs = {
-        "officer_salary": officer_salary,
-        "depreciation": depreciation,
-        "interest_expense": interest_expense,
-        "non_recurring": non_recurring,
-    }
-    adjusted_income = net_income + sum(add_backs.values())
-    annual_personal_debt = monthly_personal_debt * 12
-    total_debt_service = existing_annual_debt_service + new_annual_debt_service
-
-    dscr = (adjusted_income - annual_personal_debt) / total_debt_service if total_debt_service > 0 else 0
-
-    return {
-        "net_income": net_income,
-        "add_backs": add_backs,
-        "adjusted_income": round(adjusted_income, 2),
-        "annual_personal_debt": round(annual_personal_debt, 2),
-        "existing_debt_service": round(existing_annual_debt_service, 2),
-        "new_debt_service": round(new_annual_debt_service, 2),
-        "total_debt_service": round(total_debt_service, 2),
-        "dscr": round(dscr, 2),
-    }
+    total_emi = existing_emi + proposed_emi
+    if total_emi <= 0:
+        return 0.0
+    return round(avg_monthly_cashflow / total_emi, 2)
 
 
-def score_credit_policy(
-    dscr: float,
-    credit_score: int,
-    years_in_business: int,
-    revenue: float,
-    employees: int,
-    industry_risk: str = "low",
-) -> dict:
-    """Weighted multi-factor credit policy scoring. Deterministic."""
-    scores = {}
+def calculate_debt_equity_ratio(total_liabilities: float, total_assets: float) -> float:
+    """D/E = Total Liabilities / (Total Assets - Total Liabilities)."""
+    equity = total_assets - total_liabilities
+    if equity <= 0:
+        return 99.0  # High leverage
+    return round(total_liabilities / equity, 2)
 
-    # Financial strength (35%)
+
+def calculate_ltv(loan_amount: float, collateral_value: float) -> float:
+    """LTV = Loan Amount / Collateral Market Value × 100."""
+    if collateral_value <= 0:
+        return 0.0
+    return round((loan_amount / collateral_value) * 100, 1)
+
+
+def calculate_emi(principal: float, annual_rate_pct: float, tenure_months: int) -> float:
+    """EMI = P × r × (1+r)^n / ((1+r)^n - 1)."""
+    if annual_rate_pct <= 0 or tenure_months <= 0:
+        return 0.0
+    r = annual_rate_pct / 100 / 12
+    emi = principal * r * ((1 + r) ** tenure_months) / (((1 + r) ** tenure_months) - 1)
+    return round(emi, 2)
+
+
+def determine_risk_rating(dscr: float, ltv: float, cibil: int, years: int) -> tuple[str, float]:
+    """Score and rate the credit risk.
+
+    Returns (rating, risk_score_0_to_100).
+    Higher score = better creditworthiness.
+    """
+    score = 0
+
+    # DSCR (30 pts)
     if dscr >= 2.0:
-        scores["financials"] = 35
+        score += 30
     elif dscr >= 1.5:
-        scores["financials"] = 28
+        score += 24
     elif dscr >= 1.25:
-        scores["financials"] = 20
+        score += 18
+    elif dscr >= 1.0:
+        score += 10
     else:
-        scores["financials"] = 10
+        score += 0
 
-    # Credit score (25%)
-    if credit_score >= 750:
-        scores["credit"] = 25
-    elif credit_score >= 700:
-        scores["credit"] = 20
-    elif credit_score >= 650:
-        scores["credit"] = 15
+    # LTV (25 pts) — lower LTV is better
+    if ltv <= 40:
+        score += 25
+    elif ltv <= 50:
+        score += 20
+    elif ltv <= 60:
+        score += 15
+    elif ltv <= 70:
+        score += 8
     else:
-        scores["credit"] = 8
+        score += 0
 
-    # Business maturity (15%)
-    if years_in_business >= 5:
-        scores["maturity"] = 15
-    elif years_in_business >= 3:
-        scores["maturity"] = 12
-    elif years_in_business >= 1:
-        scores["maturity"] = 8
+    # CIBIL score (30 pts)
+    if cibil >= 800:
+        score += 30
+    elif cibil >= 750:
+        score += 25
+    elif cibil >= 700:
+        score += 20
+    elif cibil >= 650:
+        score += 12
     else:
-        scores["maturity"] = 4
+        score += 0
 
-    # Industry risk (15%)
-    risk_scores = {"low": 15, "medium": 10, "high": 5}
-    scores["industry"] = risk_scores.get(industry_risk, 10)
-
-    # Employment & scale (10%)
-    if employees >= 10:
-        scores["scale"] = 10
-    elif employees >= 5:
-        scores["scale"] = 7
+    # Business vintage (15 pts)
+    if years >= 10:
+        score += 15
+    elif years >= 5:
+        score += 12
+    elif years >= 3:
+        score += 8
+    elif years >= 1:
+        score += 4
     else:
-        scores["scale"] = 4
+        score += 0
 
-    total = sum(scores.values())
-    return {"component_scores": scores, "total_score": total, "max_score": 100}
+    # Determine rating bucket
+    if score >= 80:
+        rating = "A+"
+    elif score >= 70:
+        rating = "A"
+    elif score >= 60:
+        rating = "B+"
+    elif score >= 50:
+        rating = "B"
+    elif score >= 35:
+        rating = "C"
+    else:
+        rating = "D"
+
+    return rating, float(score)
 
 
 class UnderwritingAgent(BaseAgent):
@@ -122,71 +137,116 @@ class UnderwritingAgent(BaseAgent):
 
             self.audit(application_id, "underwriting_started")
 
-            # In production, these values come from Document Agent extraction.
-            # For MVP, use demo values matching the California Dental LLC scenario.
-            net_income = kwargs.get("net_income", 263819)
-            officer_salary = kwargs.get("officer_salary", 85000)
-            depreciation = kwargs.get("depreciation", 14177)
-            interest_expense = kwargs.get("interest_expense", 12000)
-            non_recurring = kwargs.get("non_recurring", 0)
-            monthly_personal_debt = kwargs.get("monthly_personal_debt", 3000)
-            existing_annual_debt_service = kwargs.get("existing_debt_service", 42000)
+            loan_amount = app.loan_amount or 5_000_000  # ₹50L default
+            annual_rate = 12.5  # Standard MSME secured rate %
+            tenure_months = app.loan_tenure_months or 60
 
-            # Calculate new debt service from loan terms
-            loan_amount = app.loan_amount or 300000
-            rate = 0.105  # 10.5% — will come from Pricing Agent
-            term_months = 120
-            monthly_rate = rate / 12
-            monthly_payment = loan_amount * (monthly_rate * (1 + monthly_rate)**term_months) / ((1 + monthly_rate)**term_months - 1)
-            new_annual_debt_service = monthly_payment * 12
+            # Simulate financial data (production: extracted from documents)
+            annual_revenue = app.business_annual_revenue or random.randint(3_000_000, 15_000_000)
+            net_profit_pct = random.uniform(8, 18)  # 8–18% net margin
+            net_profit = annual_revenue * net_profit_pct / 100
+            avg_monthly_cashflow = (annual_revenue * 0.12) / 12  # ~12% cashflow margin
 
-            # DSCR calculation — fully deterministic
-            dscr_result = calculate_dscr(
-                net_income, officer_salary, depreciation, interest_expense,
-                non_recurring, monthly_personal_debt,
-                existing_annual_debt_service, new_annual_debt_service,
+            total_assets = random.uniform(loan_amount * 2, loan_amount * 4)
+            total_liabilities = random.uniform(loan_amount * 0.5, loan_amount * 1.5)
+            existing_emi = kwargs.get("existing_emi", random.uniform(20_000, 80_000))
+            proposed_emi = calculate_emi(loan_amount, annual_rate, tenure_months)
+
+            # Revenue growth (simulated)
+            prev_revenue = annual_revenue * random.uniform(0.8, 1.1)
+            revenue_growth_pct = ((annual_revenue - prev_revenue) / prev_revenue * 100) if prev_revenue else 0
+            operating_margin_pct = random.uniform(10, 22)
+
+            # ── Core Financial Calculations (DETERMINISTIC) ───
+            dscr = calculate_dscr(avg_monthly_cashflow, existing_emi, proposed_emi)
+            debt_equity = calculate_debt_equity_ratio(total_liabilities, total_assets)
+
+            collateral_value = app.collateral_market_value or (
+                app.collateral_estimated_value or loan_amount * 2
             )
+            ltv = calculate_ltv(loan_amount, collateral_value)
 
-            # Credit policy scoring — fully deterministic
-            policy_score = score_credit_policy(
-                dscr=dscr_result["dscr"],
-                credit_score=app.credit_score or 780,
-                years_in_business=app.business_years_in_operation or 8,
-                revenue=app.business_annual_revenue or 917000,
-                employees=app.business_employees or 12,
-            )
+            cibil = app.cibil_score or app.credit_score or 720
+            years = app.business_years_in_operation or 3
+            risk_rating, risk_score = determine_risk_rating(dscr, ltv, cibil, years)
 
-            # Generate narrative memo — this is where LLM is used
-            memo = await llm_complete(
-                system="You are an underwriting analyst. Write a professional underwriting memo.",
+            # ── Generate CAM Draft (LLM) ──────────────────────
+            cam_draft = await llm_complete(
+                system=(
+                    "You are a senior credit analyst at an Indian NBFC specializing in MSME secured loans. "
+                    "Write a professional Credit Appraisal Memorandum (CAM) in a structured format with sections: "
+                    "1. Borrower Profile, 2. Business Overview, 3. Financial Analysis, "
+                    "4. Collateral Assessment, 5. Credit Risk Assessment, 6. Recommendation. "
+                    "Use Indian financial terminology. Format numbers in Indian system (Lakhs, Crores)."
+                ),
                 prompt=(
-                    f"Business: {app.business_name}\n"
-                    f"Loan: ${loan_amount:,.0f} SBA 7(a)\n"
-                    f"DSCR: {dscr_result['dscr']}\n"
-                    f"Adjusted income: ${dscr_result['adjusted_income']:,.0f}\n"
-                    f"Add-backs: {dscr_result['add_backs']}\n"
-                    f"Policy score: {policy_score['total_score']}/100\n"
-                    f"Credit score: {app.credit_score or 780}\n"
-                    f"Employees: {app.business_employees or 12}\n"
-                    f"Revenue: ${app.business_annual_revenue or 917000:,.0f}\n"
-                    "Write the underwriting memo."
+                    f"Application ID: {application_id}\n"
+                    f"Business: {app.business_name}, {app.business_constitution}\n"
+                    f"Industry: {app.industry_type or 'Manufacturing'}, "
+                    f"GST: {app.business_gst or 'N/A'}\n"
+                    f"Promoter: {app.applicant_name}, PAN: {app.promoter_pan or 'N/A'}\n"
+                    f"City: {app.city or 'N/A'}, Years in operation: {years}\n\n"
+                    f"Loan requested: ₹{loan_amount/100000:.1f} Lakhs, "
+                    f"Tenure: {tenure_months} months, Purpose: {app.loan_purpose or 'Business Expansion'}\n"
+                    f"Proposed Rate: {annual_rate}% p.a., EMI: ₹{proposed_emi:,.0f}/month\n\n"
+                    f"Financial Metrics:\n"
+                    f"  Annual Revenue: ₹{annual_revenue/100000:.1f} Lakhs\n"
+                    f"  Net Profit: ₹{net_profit/100000:.1f} Lakhs ({net_profit_pct:.1f}% margin)\n"
+                    f"  Avg Monthly Cashflow: ₹{avg_monthly_cashflow:,.0f}\n"
+                    f"  DSCR: {dscr} ({'above' if dscr >= 1.25 else 'below'} RBI min 1.25)\n"
+                    f"  Debt/Equity: {debt_equity}\n"
+                    f"  Revenue Growth: {revenue_growth_pct:.1f}%\n"
+                    f"  Operating Margin: {operating_margin_pct:.1f}%\n\n"
+                    f"Collateral:\n"
+                    f"  Type: {app.collateral_type or 'Residential Property'}\n"
+                    f"  Estimated Value: ₹{collateral_value/100000:.1f} Lakhs\n"
+                    f"  LTV: {ltv}% (limit 60%)\n\n"
+                    f"CIBIL Score: {cibil}\n"
+                    f"Risk Rating: {risk_rating} (Score: {risk_score}/100)\n"
+                    f"Write the complete CAM."
                 ),
             )
 
-            # Save results
-            app.dscr = dscr_result["dscr"]
-            app.risk_score = policy_score["total_score"]
-            app.underwriting_memo = memo
+            # ── Save Results ──────────────────────────────────
+            app.avg_monthly_cashflow = avg_monthly_cashflow
+            app.annual_revenue_reported = annual_revenue
+            app.net_profit = net_profit
+            app.total_assets = total_assets
+            app.total_liabilities = total_liabilities
+            app.existing_emi_obligations = existing_emi
+            app.dscr = dscr
+            app.debt_equity_ratio = debt_equity
+            app.revenue_growth_pct = round(revenue_growth_pct, 1)
+            app.operating_margin_pct = round(operating_margin_pct, 1)
+            app.collateral_market_value = collateral_value
+            app.ltv_ratio = ltv
+            app.risk_score = risk_score
+            app.risk_rating = risk_rating
+            app.underwriting_memo = cam_draft
+            app.cam_draft = cam_draft
+            app.recommended_loan_amount = loan_amount if dscr >= 1.25 and ltv <= 60 else loan_amount * 0.8
+            app.recommended_interest_rate = annual_rate
             db.commit()
 
             result = {
-                "dscr": dscr_result,
-                "policy_score": policy_score,
-                "memo": memo,
+                "dscr": dscr,
+                "ltv": ltv,
+                "debt_equity": debt_equity,
+                "revenue_growth_pct": round(revenue_growth_pct, 1),
+                "operating_margin_pct": round(operating_margin_pct, 1),
+                "risk_rating": risk_rating,
+                "risk_score": risk_score,
+                "cibil_score": cibil,
+                "proposed_emi": proposed_emi,
+                "recommended_amount": app.recommended_loan_amount,
+                "cam_draft": cam_draft,
             }
+
             self.audit(application_id, "underwriting_completed", {
-                "dscr": dscr_result["dscr"],
-                "risk_score": policy_score["total_score"],
+                "dscr": dscr,
+                "ltv": ltv,
+                "risk_rating": risk_rating,
+                "risk_score": risk_score,
             })
             return result
         finally:

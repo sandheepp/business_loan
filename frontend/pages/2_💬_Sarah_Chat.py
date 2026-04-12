@@ -1,70 +1,143 @@
-"""Sarah Chat — Talk to the AI engagement agent."""
+"""Sarah Chat — AI Engagement Agent for MSME Loan Applicants."""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import streamlit as st
 import requests
-from datetime import datetime
+from styles import page_config_dark, sidebar_status
+
+page_config_dark("Sarah Chat", "💬")
 
 API = st.session_state.get("api_url", "http://localhost:8000")
 
-st.set_page_config(page_title="CASA — Sarah Chat", page_icon="💬", layout="wide")
-st.title("💬 Chat with Sarah")
-st.markdown("Sarah is your AI assistant throughout the loan application process.")
+st.sidebar.markdown("""
+<div style="padding:0.5rem 0 1rem;">
+  <div style="font-size:1.3rem;font-weight:800;color:#FFFFFF;">Sarah</div>
+  <div style="font-size:0.75rem;color:#8A8FA8;">AI Engagement Agent</div>
+</div>
+""", unsafe_allow_html=True)
 
-# App ID input
-app_id = st.text_input("Application ID", value=st.session_state.get("app_id", ""),
-                        placeholder="Enter your application ID")
+st.sidebar.markdown("""
+<div class="rv-card" style="padding:1rem;margin-bottom:1rem;">
+  <div style="font-size:0.7rem;color:#8A8FA8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.6rem;">Try Asking Sarah</div>
+  <div style="font-size:0.82rem;color:#8A8FA8;line-height:1.8;">
+    📋 What documents do I need?<br>
+    💰 How is my interest rate calculated?<br>
+    🏠 What LTV ratio is allowed?<br>
+    ⏱️ How long does KYC take?<br>
+    📊 What is DSCR?<br>
+    🇮🇳 What are MSME loan limits?
+  </div>
+</div>
+""", unsafe_allow_html=True)
+sidebar_status()
+
+# ── Header ────────────────────────────────────────────────────
+st.markdown("""
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+  <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#5B4CF5,#7B6BF8);
+              display:flex;align-items:center;justify-content:center;font-size:1.4rem;">💬</div>
+  <div>
+    <div style="font-size:1.5rem;font-weight:800;color:#FFFFFF;letter-spacing:-0.02em;">Sarah</div>
+    <div style="font-size:0.82rem;color:#00D48A;">● Online · AI Engagement Agent</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ── App ID Input ──────────────────────────────────────────────
+app_id = st.text_input(
+    "Application ID",
+    value=st.session_state.get("app_id", ""),
+    placeholder="e.g. MSME3A7B2F",
+    label_visibility="visible",
+    key="sarah_app_id",
+)
 
 if not app_id:
-    st.info("Enter your application ID to start chatting with Sarah. "
-            "You can find it on the Application page after starting an application.")
+    st.markdown("""
+    <div class="rv-card" style="text-align:center;padding:3rem;color:#8A8FA8;">
+      <div style="font-size:2.5rem;margin-bottom:0.8rem;">💬</div>
+      <div style="font-size:1rem;font-weight:600;color:#FFFFFF;">Start a conversation with Sarah</div>
+      <div style="font-size:0.85rem;margin-top:0.5rem;">Enter your Application ID above to get personalised guidance on your MSME loan.</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
-# Load chat history
+# ── Chat Session ──────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if st.button("Load History"):
+# Load history on first visit
+if f"loaded_{app_id}" not in st.session_state:
     try:
-        r = requests.get(f"{API}/api/chat/{app_id}/history")
+        r = requests.get(f"{API}/api/chat/{app_id}/history", timeout=3)
         if r.status_code == 200:
             st.session_state.messages = [
                 {"role": m["role"], "content": m["content"]} for m in r.json()
             ]
     except Exception:
-        st.warning("Could not load history.")
+        pass
+    st.session_state[f"loaded_{app_id}"] = True
 
-# Display messages
+# Show welcome message if no history
+if not st.session_state.messages:
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,rgba(91,76,245,0.1),rgba(91,76,245,0.05));
+                border:1px solid rgba(91,76,245,0.25);border-radius:16px;padding:1.2rem 1.5rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:flex-start;gap:0.8rem;">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5B4CF5,#7B6BF8);
+                    display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">💬</div>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;color:#FFFFFF;">Sarah</div>
+          <div style="font-size:0.9rem;color:#C5C8D8;margin-top:0.3rem;line-height:1.6;">
+            Namaste! I'm Sarah, your MSME loan assistant. I'm here to guide you through your secured loan application.<br><br>
+            I can help you with document requirements, eligibility criteria, KYC process, DSCR calculations, and more. What would you like to know?
+          </div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ── Message History ───────────────────────────────────────────
 for msg in st.session_state.messages:
-    avatar = "🧑" if msg["role"] == "user" else "🤖"
-    with st.chat_message(msg["role"], avatar=avatar):
-        st.markdown(msg["content"])
+    is_user = msg["role"] == "user"
+    if is_user:
+        st.markdown(f"""
+        <div style="display:flex;justify-content:flex-end;margin-bottom:0.8rem;">
+          <div style="background:linear-gradient(135deg,#5B4CF5,#7B6BF8);border-radius:16px 16px 4px 16px;
+                      padding:0.8rem 1.2rem;max-width:70%;font-size:0.9rem;color:#FFFFFF;line-height:1.5;">
+            {msg["content"]}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div style="display:flex;gap:0.7rem;margin-bottom:0.8rem;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5B4CF5,#7B6BF8);
+                      display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">💬</div>
+          <div style="background:#1A1E35;border:1px solid rgba(255,255,255,0.07);border-radius:4px 16px 16px 16px;
+                      padding:0.8rem 1.2rem;max-width:75%;font-size:0.9rem;color:#C5C8D8;line-height:1.6;">
+            {msg["content"]}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-# Chat input
-if prompt := st.chat_input("Ask Sarah anything about your application..."):
+# ── Chat Input ────────────────────────────────────────────────
+if prompt := st.chat_input("Ask Sarah about your loan application..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="🧑"):
-        st.markdown(prompt)
 
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Sarah is typing..."):
-            try:
-                r = requests.post(f"{API}/api/chat/", json={
-                    "application_id": app_id, "message": prompt,
-                })
-                if r.status_code == 200:
-                    response = r.json()["content"]
-                else:
-                    response = "I'm having trouble connecting. Please try again."
-            except Exception:
-                response = "I'm having trouble connecting to the server. Is the backend running?"
+    with st.spinner("Sarah is typing..."):
+        try:
+            r = requests.post(f"{API}/api/chat/", json={
+                "application_id": app_id,
+                "message": prompt,
+            }, timeout=30)
+            if r.status_code == 200:
+                response = r.json()["content"]
+            else:
+                response = "I'm having trouble processing your request. Please try again."
+        except Exception:
+            response = "I'm having trouble connecting to the server. Please ensure the backend is running."
 
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
-# Sidebar tips
-st.sidebar.markdown("### Try asking Sarah:")
-st.sidebar.markdown("""
-- "What documents do I need?"
-- "I can't find my EIN, but I have my TIN"
-- "What's the status of my application?"
-- "How long will this take?"
-""")
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.rerun()
