@@ -4,33 +4,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
 import requests
-from styles import page_config_dark, sidebar_status
 
-page_config_dark("Sarah Chat", "💬")
+
 
 API = st.session_state.get("api_url", "http://localhost:8000")
 
-st.sidebar.markdown("""
-<div style="padding:0.5rem 0 1rem;">
-  <div style="font-size:1.3rem;font-weight:800;color:#FFFFFF;">Sarah</div>
-  <div style="font-size:0.75rem;color:#8A8FA8;">AI Engagement Agent</div>
-</div>
-""", unsafe_allow_html=True)
-
-st.sidebar.markdown("""
-<div class="rv-card" style="padding:1rem;margin-bottom:1rem;">
-  <div style="font-size:0.7rem;color:#8A8FA8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.6rem;">Try Asking Sarah</div>
-  <div style="font-size:0.82rem;color:#8A8FA8;line-height:1.8;">
-    📋 What documents do I need?<br>
-    💰 How is my interest rate calculated?<br>
-    🏠 What LTV ratio is allowed?<br>
-    ⏱️ How long does KYC take?<br>
-    📊 What is DSCR?<br>
-    🇮🇳 What are MSME loan limits?
-  </div>
-</div>
-""", unsafe_allow_html=True)
-sidebar_status()
 
 # ── Header ────────────────────────────────────────────────────
 st.markdown("""

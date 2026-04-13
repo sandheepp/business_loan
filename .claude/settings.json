@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"gateway.py\")",
+      "Bash(echo \"Gateway PID: $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501/)",
+      "Bash(.venv/bin/python -m streamlit run frontend/app.py --server.port 8502 --server.headless true --server.enableCORS false --server.enableXsrfProtection false)",
+      "Bash(echo \"Streamlit PID: $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{redirect_url}\" http://localhost:8501/Application)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501/Application)",
+      "Bash(curl -s http://localhost:8502/)",
+      "Bash(curl -s \"http://localhost:8502/_stcore/allowed-message-origins\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8502/application)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8502/Application)"
+    ]
+  }
+}

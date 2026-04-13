@@ -43,101 +43,94 @@ html, body, [data-testid="stApp"] {
 }
 
 /* ── Sidebar ────────────────────────────────────────────── */
-[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #0D1025 0%, #0F1228 60%, #0C0F1E 100%) !important;
     border-right: 1px solid rgba(91,76,245,0.2) !important;
 }
-[data-testid="stSidebar"] * {
+section[data-testid="stSidebar"] * {
     color: var(--text-primary) !important;
 }
-[data-testid="stSidebar"] .stSelectbox label,
-[data-testid="stSidebar"] p {
+section[data-testid="stSidebar"] .stSelectbox label,
+section[data-testid="stSidebar"] p {
     color: var(--text-secondary) !important;
     font-size: 0.85rem !important;
 }
 
-/* ── Sidebar header (search area) ─────────────────────── */
-[data-testid="stSidebarHeader"] {
-    padding: 1rem 1rem 0.5rem !important;
-    border-bottom: 1px solid rgba(91,76,245,0.12) !important;
-}
-
-/* Search input inside nav */
-[data-testid="stSidebarNav"] input[type="search"],
-[data-testid="stSidebarNav"] input {
+/* ── Search box ───────────────────────────────────────── */
+section[data-testid="stSidebar"] input {
     background: rgba(255,255,255,0.06) !important;
-    border: 1px solid rgba(91,76,245,0.22) !important;
+    border: 1px solid rgba(91,76,245,0.25) !important;
     border-radius: 10px !important;
     color: #fff !important;
     font-size: 0.82rem !important;
-    padding: 0.5rem 0.85rem !important;
 }
-[data-testid="stSidebarNav"] input:focus {
-    border-color: rgba(91,76,245,0.6) !important;
-    box-shadow: 0 0 0 2px rgba(91,76,245,0.18) !important;
+section[data-testid="stSidebar"] input:focus {
+    border-color: rgba(91,76,245,0.55) !important;
+    box-shadow: 0 0 0 2px rgba(91,76,245,0.15) !important;
     outline: none !important;
 }
 
-/* ── Nav items list ───────────────────────────────────── */
-[data-testid="stSidebarNavItems"] {
-    padding: 0.5rem 0.5rem !important;
-    gap: 2px !important;
+/* ── Hide Streamlit's default nav — we build our own ─── */
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
+    display: none !important;
+}
+/* Hide the search input that came with nav */
+section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] input,
+section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] {
+    display: none !important;
 }
 
-/* Every nav link anchor */
-[data-testid="stSidebarNavItems"] a,
-[data-testid="stSidebarNavLink"] {
+/* Suppress layout flash during page transitions — no animated reflows */
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] * {
+    transition: none !important;
+    animation-duration: 0s !important;
+}
+
+/* ── User content fills the full sidebar height ──────── */
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    height: 100vh !important;
     display: flex !important;
-    align-items: center !important;
-    gap: 0.55rem !important;
-    padding: 0.55rem 0.85rem !important;
+    flex-direction: column !important;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* ── Custom page_link buttons ─────────────────────────── */
+section[data-testid="stSidebar"] [data-testid="stPageLink"] {
     border-radius: 10px !important;
     border: 1px solid transparent !important;
-    text-decoration: none !important;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease !important;
-    margin-bottom: 2px !important;
+    margin: 1px 0 !important;
+    transition: background 0.15s, border-color 0.15s !important;
 }
-[data-testid="stSidebarNavItems"] a:hover,
-[data-testid="stSidebarNavLink"]:hover {
+section[data-testid="stSidebar"] [data-testid="stPageLink"]:hover {
     background: rgba(91,76,245,0.14) !important;
     border-color: rgba(91,76,245,0.3) !important;
-    transform: translateX(3px) !important;
 }
-
-/* Active page link — Streamlit renders aria-current="page" on the active <a> */
-[data-testid="stSidebarNavItems"] a[aria-current="page"],
-[data-testid="stSidebarNavLink"][aria-current="page"],
-[data-testid="stSidebarNavItems"] a.active {
-    background: linear-gradient(135deg, rgba(91,76,245,0.25), rgba(91,76,245,0.08)) !important;
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] {
+    padding: 0.5rem 0.8rem !important;
+    border-radius: 10px !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover {
+    background: rgba(91,76,245,0.14) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"],
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"].active {
+    background: linear-gradient(135deg,rgba(91,76,245,0.25),rgba(91,76,245,0.07)) !important;
     border-color: rgba(91,76,245,0.45) !important;
-    box-shadow: inset 0 0 0 0 transparent, 0 2px 12px rgba(91,76,245,0.18) !important;
 }
-
-/* Nav link text */
-[data-testid="stSidebarNavItems"] a span,
-[data-testid="stSidebarNavLink"] span {
+section[data-testid="stSidebar"] [data-testid="stPageLink"] p {
     font-size: 0.86rem !important;
     font-weight: 500 !important;
-    letter-spacing: -0.01em !important;
+    color: #C8CADC !important;
 }
-[data-testid="stSidebarNavItems"] a[aria-current="page"] span,
-[data-testid="stSidebarNavLink"][aria-current="page"] span {
-    font-weight: 700 !important;
-    color: #A09BFF !important;
-}
-
-/* "View more" button */
-[data-testid="stSidebarNavViewButton"] {
-    color: var(--accent-light) !important;
-    font-size: 0.8rem !important;
-    font-weight: 600 !important;
-    padding: 0.4rem 0.85rem !important;
-}
-
-/* Nav section separator */
-[data-testid="stSidebarNavSeparator"] {
-    border-color: rgba(255,255,255,0.06) !important;
-    margin: 0.4rem 0.5rem !important;
+section[data-testid="stSidebar"] [data-testid="stPageLink"]:hover p {
+    color: #FFFFFF !important;
 }
 
 /* ── Main Content ───────────────────────────────────────── */
@@ -550,6 +543,40 @@ hr {
 /* Hide Streamlit branding */
 #MainMenu, footer, header { visibility: hidden; }
 [data-testid="stDecoration"] { display: none; }
+
+/* ── Suppress page-transition skeleton & loading states ── */
+/* The skeleton appears after 500 ms while new page loads — hide it
+   entirely since we have a fast local connection and it causes jitter. */
+[data-testid="stAppSkeleton"],
+.stAppSkeleton {
+    display: none !important;
+}
+
+/* Individual skeleton shimmer bars */
+[data-testid="stSkeleton"],
+.stSkeleton {
+    background: rgba(255,255,255,0.05) !important;
+    border-radius: 6px !important;
+}
+
+/* Keep background dark so there's no white flash between pages */
+html, body {
+    background-color: var(--bg-primary) !important;
+}
+[data-testid="stApp"],
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewMain"],
+[data-testid="stMain"],
+[data-testid="stMainBlockContainer"],
+[data-testid="stAppViewBlockContainer"] {
+    background-color: var(--bg-primary) !important;
+    min-height: 100vh !important;
+}
+
+/* Status widget (spinning indicator top-right) */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
 </style>
 """
 
@@ -567,7 +594,7 @@ def page_config_dark(title: str, icon: str = "🏦"):
 
 
 def sidebar_status():
-    """Render API status in sidebar."""
+    """Render full custom sidebar: landing link, nav, status pinned at bottom."""
     import streamlit as st
     import requests
     api = st.session_state.get("api_url", "http://localhost:8000")
@@ -583,6 +610,7 @@ def sidebar_status():
     label  = "Backend Connected" if ok else "Backend Offline"
     pulse  = "animation:pulse 2s infinite;" if ok else ""
 
+    # ── Top: CASA logo + landing link ─────────────────────────
     st.sidebar.markdown(f"""
 <style>
 @keyframes pulse {{
@@ -590,12 +618,80 @@ def sidebar_status():
   50%      {{ opacity:0.4; }}
 }}
 </style>
-<div style="margin-top:auto;padding:0.6rem 0.85rem;
-            background:{bg};border:1px solid {border};border-radius:10px;
-            display:flex;align-items:center;gap:0.55rem;">
-  <span style="width:7px;height:7px;border-radius:50%;background:{color};
-               display:inline-block;flex-shrink:0;{pulse}"></span>
-  <span style="font-size:0.76rem;color:#8A8FA8;font-weight:500;">{label}</span>
+<div style="padding:1rem 0.85rem 0.8rem;">
+  <!-- CASA branding -->
+  <div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:0.9rem;">
+    <div style="width:30px;height:30px;border-radius:8px;flex-shrink:0;
+                background:linear-gradient(135deg,#5B4CF5,#8B7FF8);
+                display:flex;align-items:center;justify-content:center;font-size:0.95rem;
+                box-shadow:0 3px 10px rgba(91,76,245,0.38);">🏦</div>
+    <div>
+      <div style="font-size:1.05rem;font-weight:900;letter-spacing:-0.03em;
+                  background:linear-gradient(135deg,#FFFFFF 30%,#A09BFF);
+                  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                  background-clip:text;line-height:1.1;">CASA</div>
+      <div style="font-size:0.62rem;color:#5A5E7A;font-weight:500;letter-spacing:0.02em;">
+        MSME Loan Origination</div>
+    </div>
+  </div>
+
+  <!-- Landing page link -->
+  <a href="/landingpage" target="_self" style="
+    display:flex;align-items:center;gap:0.6rem;
+    padding:0.5rem 0.8rem;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.09);
+    border-radius:10px;text-decoration:none;
+    font-size:0.83rem;font-weight:600;color:#C8CADC;
+    transition:background 0.15s,border-color 0.15s;">
+    <span style="font-size:0.88rem;">🏠</span>
+    <span style="flex:1;">Landing Page</span>
+    <span style="font-size:0.7rem;color:#4A4E6A;">↗</span>
+  </a>
+</div>
+
+<!-- Section label -->
+<div style="padding:0 0.85rem 0.3rem;
+            font-size:0.65rem;font-weight:700;color:#3A3E58;
+            text-transform:uppercase;letter-spacing:0.12em;">Navigation</div>
+""", unsafe_allow_html=True)
+
+    # ── Middle: page links ─────────────────────────────────────
+    pages = [
+        ("/Application",  "📋", "Application"),
+        ("/Sarah_Chat",   "💬", "Sarah Chat"),
+        ("/Dashboard",    "📊", "Dashboard"),
+        ("/Audit_Trail",  "📜", "Audit Trail"),
+        ("/Underwriting", "🏦", "Underwriting"),
+        ("/Approvals",    "✅", "Approvals"),
+    ]
+    nav_links_html = '<div style="padding:0 0.5rem 0.5rem;">'
+    for href, icon, label_text in pages:
+        nav_links_html += f"""
+<a href="{href}" target="_self" style="
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.5rem 0.8rem;margin-bottom:0.2rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;text-decoration:none;
+  font-size:0.83rem;font-weight:600;color:#C8CADC;
+  transition:background 0.15s,border-color 0.15s;">
+  <span style="font-size:0.88rem;">{icon}</span>
+  <span style="flex:1;">{label_text}</span>
+</a>"""
+    nav_links_html += '</div>'
+    st.sidebar.markdown(nav_links_html, unsafe_allow_html=True)
+
+    # ── Bottom: backend status (sticky to bottom) ──────────────
+    st.sidebar.markdown(f"""
+<div style="margin-top:auto;padding:0.85rem 0.85rem 1rem;">
+  <div style="padding:0.5rem 0.75rem;
+              background:{bg};border:1px solid {border};border-radius:10px;
+              display:flex;align-items:center;gap:0.55rem;">
+    <span style="width:7px;height:7px;border-radius:50%;background:{color};
+                 display:inline-block;flex-shrink:0;{pulse}"></span>
+    <span style="font-size:0.74rem;color:#8A8FA8;font-weight:500;">{label}</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 

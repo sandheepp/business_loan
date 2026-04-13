@@ -9,8 +9,8 @@ cd "$(dirname "$0")"
 
 VENV="$(pwd)/.venv"
 BACKEND_PORT=8000
-STREAMLIT_PORT=8501
-GATEWAY_PORT=8080
+STREAMLIT_PORT=8502
+GATEWAY_PORT=8501
 CF_LOG=/tmp/casa_cf.log
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'
@@ -81,14 +81,13 @@ for i in {1..15}; do
   sleep 1
 done
 
-# ── 6. Streamlit (internal only — gateway exposes it at /app) ─
+# ── 6. Streamlit (internal only — gateway proxies it) ─────────
 echo -e "${CYAN}▸ Starting Streamlit on port $STREAMLIT_PORT (internal)...${RESET}"
 python -m streamlit run frontend/app.py \
   --server.port $STREAMLIT_PORT \
   --server.headless true \
   --server.enableCORS false \
   --server.enableXsrfProtection false \
-  --server.baseUrlPath /app \
   > /tmp/casa_streamlit.log 2>&1 &
 STREAM_PID=$!
 
@@ -105,8 +104,7 @@ STREAMLIT_PORT=$STREAMLIT_PORT GATEWAY_PORT=$GATEWAY_PORT \
 GATEWAY_PID=$!
 sleep 2
 echo -e "${GREEN}✓ Gateway ready${RESET}"
-echo -e "  Landing page : ${CYAN}http://localhost:$GATEWAY_PORT/${RESET}"
-echo -e "  App          : ${CYAN}http://localhost:$GATEWAY_PORT/app${RESET}"
+echo -e "  Open : ${CYAN}http://localhost:$GATEWAY_PORT/${RESET}"
 
 # ── 8. Cloudflare Tunnel → gateway ───────────────────────────
 echo ""
@@ -126,8 +124,7 @@ if [ -n "$URL" ]; then
   echo ""
   echo -e "${BOLD}${GREEN}  🚀  CASA LOS is live${RESET}"
   echo -e "${GREEN}  ─────────────────────────────────────────${RESET}"
-  echo -e "  Landing : ${BOLD}${CYAN}${URL}/${RESET}"
-  echo -e "  App     : ${BOLD}${CYAN}${URL}/app${RESET}"
+  echo -e "  ${BOLD}${CYAN}${URL}/${RESET}"
   echo -e "${GREEN}  ─────────────────────────────────────────${RESET}"
   echo -e "${YELLOW}  Valid until Ctrl+C${RESET}"
   echo ""

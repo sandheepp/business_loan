@@ -5,19 +5,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import streamlit as st
 import requests
 import pandas as pd
-from styles import page_config_dark, sidebar_status
 
-page_config_dark("Audit Trail", "📜")
+
 
 API = st.session_state.get("api_url", "http://localhost:8000")
 
-st.sidebar.markdown("""
-<div style="padding:0.5rem 0 1rem;">
-  <div style="font-size:1.3rem;font-weight:800;color:#FFFFFF;">Audit Trail</div>
-  <div style="font-size:0.75rem;color:#8A8FA8;">Immutable Agent Action Log</div>
-</div>
-""", unsafe_allow_html=True)
-sidebar_status()
 
 # ── Header ────────────────────────────────────────────────────
 st.markdown("""

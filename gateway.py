@@ -1,18 +1,20 @@
 """
-CASA Gateway — landing page at /  ·  Streamlit app at /app
-Requires Streamlit to be started with --server.baseUrlPath=/app
+CASA Gateway
+  /landingpage  → landing.html (static)
+  /             → redirect to /landingpage
+  everything else → proxy to Streamlit (internal port 8502)
 """
 import asyncio, os
 import httpx
 import aiohttp
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import FileResponse, Response
-from starlette.routing import Route, WebSocketRoute
+from starlette.responses import FileResponse, Response, RedirectResponse
+from starlette.routing import Route, WebSocketRoute, Mount
 from starlette.websockets import WebSocket
 
-STREAMLIT_PORT = int(os.environ.get("STREAMLIT_PORT", 8501))
-GATEWAY_PORT   = int(os.environ.get("GATEWAY_PORT",   8080))
+STREAMLIT_PORT = int(os.environ.get("STREAMLIT_PORT", 8502))
+GATEWAY_PORT   = int(os.environ.get("GATEWAY_PORT",   8501))
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -20,14 +22,20 @@ BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 async def landing(request: Request):
     return FileResponse(os.path.join(BASE_DIR, "landing.html"))
 
+async def root_redirect(request: Request):
+    return RedirectResponse(url="/landingpage", status_code=302)
 
-# ── HTTP proxy (all /app/* traffic) ──────────────────────────
+async def app_redirect(request: Request):
+    """Redirect /app and /app/* to the landing page."""
+    return RedirectResponse(url="/landingpage", status_code=302)
+
+
+# ── HTTP proxy → Streamlit ─────────────────────────────────────
 async def proxy_http(request: Request):
-    path = request.url.path
+    path  = request.url.path
     query = f"?{request.url.query}" if request.url.query else ""
     target = f"http://localhost:{STREAMLIT_PORT}{path}{query}"
 
-    # Strip hop-by-hop headers before forwarding
     skip_req = {"host", "connection", "keep-alive", "te", "trailers",
                 "transfer-encoding", "upgrade"}
     headers = {k: v for k, v in request.headers.items()
@@ -41,8 +49,6 @@ async def proxy_http(request: Request):
                 headers = headers,
                 content = await request.body(),
             )
-            # httpx decompresses automatically — drop encoding headers so the
-            # browser does not try to decompress already-plain content.
             skip_resp = {"content-encoding", "transfer-encoding", "content-length",
                          "connection", "keep-alive", "te", "trailers", "upgrade"}
             fwd_headers = {k: v for k, v in resp.headers.items()
@@ -58,9 +64,8 @@ async def proxy_http(request: Request):
             return Response(f"Proxy error: {e}", status_code=502)
 
 
-# ── WebSocket proxy ───────────────────────────────────────────
+# ── WebSocket proxy → Streamlit ────────────────────────────────
 async def proxy_ws(websocket: WebSocket):
-    # Echo back the browser's requested subprotocol (Streamlit uses "streamlit")
     subprotocols = websocket.scope.get("subprotocols", [])
     await websocket.accept(subprotocol=subprotocols[0] if subprotocols else None)
 
@@ -85,7 +90,6 @@ async def proxy_ws(websocket: WebSocket):
             return
 
         async def fwd_up():
-            """Browser → Streamlit"""
             try:
                 while True:
                     msg = await websocket.receive()
@@ -101,7 +105,6 @@ async def proxy_ws(websocket: WebSocket):
                 await upstream.close()
 
         async def fwd_dn():
-            """Streamlit → Browser"""
             try:
                 async for msg in upstream:
                     if msg.type == aiohttp.WSMsgType.BINARY:
@@ -127,8 +130,8 @@ async def proxy_ws(websocket: WebSocket):
         await upstream.close()
         await session.close()
 
-    except Exception as e:
-        log.error(f"WS proxy error: {e}")
+    except Exception:
+        pass
     finally:
         try:
             await websocket.close()
@@ -136,18 +139,18 @@ async def proxy_ws(websocket: WebSocket):
             pass
 
 
-# ── Routes ────────────────────────────────────────────────────
-WS_PATHS = [
-    "/app/_stcore/stream",
-    "/app/stream",
-]
+# ── Routes ─────────────────────────────────────────────────────
+# WebSocket paths (no baseUrlPath — Streamlit uses /_stcore/stream)
+WS_PATHS = ["/_stcore/stream", "/stream"]
 
 routes = [
-    Route("/",             landing),
-    Route("/landing.html", landing),
+    Route("/",                root_redirect),
+    Route("/landingpage",     landing),
+    Route("/landing.html",    landing),
+    Route("/app",             app_redirect),
+    Route("/app/{rest:path}", app_redirect),
     *[WebSocketRoute(p, proxy_ws) for p in WS_PATHS],
-    Route("/app/{rest:path}", proxy_http),
-    Route("/app",             proxy_http),
+    Route("/{rest:path}",     proxy_http),
 ]
 
 app = Starlette(routes=routes)
@@ -155,8 +158,8 @@ app = Starlette(routes=routes)
 
 if __name__ == "__main__":
     import uvicorn
-    print(f"\n  CASA Gateway")
-    print(f"  Landing : http://localhost:{GATEWAY_PORT}/")
-    print(f"  App     : http://localhost:{GATEWAY_PORT}/app")
-    print(f"  → Streamlit must run on port {STREAMLIT_PORT} with --server.baseUrlPath=/app\n")
+    print(f"\n  CASA Gateway  (port {GATEWAY_PORT})")
+    print(f"  Landing : http://localhost:{GATEWAY_PORT}/landingpage")
+    print(f"  App     : http://localhost:{GATEWAY_PORT}/")
+    print(f"  → Streamlit runs internally on port {STREAMLIT_PORT}\n")
     uvicorn.run(app, host="0.0.0.0", port=GATEWAY_PORT, log_level="warning")

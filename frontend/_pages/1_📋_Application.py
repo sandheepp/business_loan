@@ -4,9 +4,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
 import requests
-from styles import page_config_dark, sidebar_status, format_inr, status_badge
+from styles import format_inr, status_badge
 
-page_config_dark("Application", "📋")
 
 API = st.session_state.get("api_url", "http://localhost:8000")
 
@@ -17,25 +16,6 @@ for key, default in [
     if key not in st.session_state:
         st.session_state[key] = default
 
-# ── Sidebar Summary ───────────────────────────────────────────
-st.sidebar.markdown("""
-<div style="padding:0.5rem 0 1rem;">
-  <div style="font-size:1.3rem;font-weight:800;color:#FFFFFF;">Application</div>
-  <div style="font-size:0.75rem;color:#8A8FA8;">MSME Secured Loan</div>
-</div>
-""", unsafe_allow_html=True)
-
-if st.session_state.app_id:
-    st.sidebar.markdown(f"""
-    <div style="background:#1A1E35;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1rem;margin-bottom:1rem;">
-      <div style="font-size:0.7rem;color:#8A8FA8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Application ID</div>
-      <div style="font-size:0.9rem;font-weight:700;font-family:monospace;color:#7B6BF8;">{st.session_state.app_id}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    pct = min(st.session_state.step / 5, 1.0)
-    st.sidebar.progress(pct, f"Step {st.session_state.step} of 5")
-
-sidebar_status()
 
 # ── Header ────────────────────────────────────────────────────
 st.markdown("""
